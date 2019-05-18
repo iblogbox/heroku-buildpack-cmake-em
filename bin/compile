@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+echo "-----> Installing cmake"
+
+### Configure directories
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+### CMake
+if [ ! -f "$CACHE_DIR/cmake-3.6.1/bin/cmake" ]; then
+	echo "-----> Downloading cmake"
+	# download
+	curl https://cmake.org/files/v3.6/cmake-3.6.1.tar.gz -s -O
+
+	# untar the binary to the directory we want
+	tar -C $CACHE_DIR/ -xvf cmake-3.6.1.tar.gz
+
+	cd $CACHE_DIR/cmake-3.6.1
+	./bootstrap
+	make
+	make install
+else
+	echo "-----> Cmake exists in cache"
+fi
+
+### Emscripten
+if [ ! -f $CACHE_DIR/emsdk_portable/emsdk ]; then
+	curl https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz -s -O
+
+	# untar the binary to the directory we want
+	tar -C $CACHE_DIR/ -xf emsdk-portable.tar.gz
+fi
+
+cd $CACHE_DIR/emsdk_portable
+# Fetch the latest registry of available tools.
+./emsdk update
+# Download and install the latest SDK tools.
+./emsdk install latest
+# Make the "latest" SDK "active"
+./emsdk activate latest
+
+echo $debug
+
+echo $PATH
